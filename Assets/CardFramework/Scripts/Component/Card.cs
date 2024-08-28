@@ -33,8 +33,9 @@ public class Card : MonoBehaviour
 
 	public string Description { get; set; }
 	
-	public string FaceValue { get; set; }
-    
+	//public string FaceValue { get; set; }
+	public int FaceValue { get; set; }
+
 	private float _positionDamp = .05f;
 
 	private float _rotationDamp = .05f;   
@@ -61,7 +62,7 @@ public class Card : MonoBehaviour
 	private void SmoothToPointAndDirection(Vector3 point, float moveSmooth, Quaternion rotation, float rotSmooth)
 	{
 		//transform.position = Vector3.SmoothDamp(transform.position, point, ref _smoothVelocity, moveSmooth);	
-		transform.position = Vector3.Lerp( transform.position, point, 1 - Mathf.Exp( -1 * Time.deltaTime )  );
+		transform.position = Vector3.Lerp( transform.position, point, 1 - Mathf.Exp( -1 * Time.deltaTime*BlackjackGameManager.Instance.dealSpeed )  );
 		Quaternion newRotation;
 		newRotation.x = Mathf.SmoothDamp(transform.rotation.x, rotation.x, ref _smoothRotationVelocity.x, rotSmooth); 
 		newRotation.y = Mathf.SmoothDamp(transform.rotation.y, rotation.y, ref _smoothRotationVelocity.y, rotSmooth); 

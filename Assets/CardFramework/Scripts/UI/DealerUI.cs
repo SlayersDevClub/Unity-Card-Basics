@@ -28,7 +28,7 @@ public class DealerUI : MonoBehaviour
 	{
 		if (_dealer.DealInProgress == 0)
 		{
-			StartCoroutine(_dealer.DrawCoroutine());
+			//StartCoroutine(_dealer.DrawCoroutine());
 		}
 	}
 }

@@ -25,6 +25,8 @@ public class CardDeck : MonoBehaviour
 
 		string[] nameArray = cardBundle.GetAllAssetNames();
 
+		
+
 		ShuffleArray (nameArray);
 
 		for (int i = 0; i < nameArray.Length; ++i)
@@ -36,7 +38,7 @@ public class CardDeck : MonoBehaviour
 			card.TexturePath = nameArray[ i ];
 			card.SourceAssetBundlePath = cardBundlePath;
 			card.transform.position = new Vector3(0, 1, 0);
-			card.FaceValue = StringToNameValue(NameTemp);
+			card.FaceValue = StringToFaceValue(NameTemp);
 			card.Description = StringToDescriptionValue (NameTemp);
 			CardList.Add(card);
 		}

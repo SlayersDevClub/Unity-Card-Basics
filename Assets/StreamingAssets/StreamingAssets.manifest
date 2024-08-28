@@ -1,10 +1,10 @@
 ManifestFileVersion: 0
-CRC: 1348613291
+CRC: 1878250578
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
-      Name: cards
+      Name: tarotbasic
       Dependencies: {}
     Info_1:
-      Name: tarotbasic
+      Name: cards
       Dependencies: {}

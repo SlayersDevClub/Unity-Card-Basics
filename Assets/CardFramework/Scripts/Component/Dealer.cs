@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.IO;
+using System.Threading.Tasks;
 
 public class Dealer : MonoBehaviour 
 {
@@ -57,8 +58,8 @@ public class Dealer : MonoBehaviour
 
 	private void Awake()
 	{
-		_cardDeck.InstanatiateDeck("tarotbasic");
-		//_cardDeck.InstanatiateDeck("cards");
+		//_cardDeck.InstanatiateDeck("tarotbasic");
+		_cardDeck.InstanatiateDeck("cards");
 		StartCoroutine(StackCardRangeOnSlot(0, _cardDeck.CardList.Count, _stackCardSlot));
 	}
     
@@ -80,6 +81,18 @@ public class Dealer : MonoBehaviour
 			yield return new WaitForSeconds(CardStackDelay);
 		}
 		DealInProgress--;
+	}
+
+	public void DiscardCard()
+	{
+		MoveCardSlotToCardSlot(_prior0CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_prior1CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_prior2CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_prior3CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_prior4CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_prior5CardSlot, _discardStackCardSlot);
+		MoveCardSlotToCardSlot(_currentCardSlot, _discardStackCardSlot);
+		currentCollectiveCardValue = 0;
 	}
     
     /// <summary>
@@ -150,8 +163,9 @@ public class Dealer : MonoBehaviour
 
 		DealInProgress--;
     }
+	public int currentCollectiveCardValue = 0, drawnValue = 0;
 
-	public IEnumerator DrawCoroutine()
+	public IEnumerator DrawCoroutine(TaskCompletionSource<int> tcs)
 	{
 		DealInProgress++;
 		
@@ -188,16 +202,31 @@ public class Dealer : MonoBehaviour
 			yield return new WaitForSeconds(CardStackDelay);		
 		}		
 		_currentCardSlot.AddCard(_stackCardSlot.TopCard());	
-		
-//		int collectiveFaceValue = _prior0CardSlot.FaceValue();
-//		collectiveFaceValue += _prior1CardSlot.FaceValue();
-//		collectiveFaceValue += _prior2CardSlot.FaceValue();
-//		collectiveFaceValue += _prior3CardSlot.FaceValue();
-//		collectiveFaceValue += _prior4CardSlot.FaceValue();
-//		collectiveFaceValue += _prior5CardSlot.FaceValue();
-//		collectiveFaceValue += _currentCardSlot.FaceValue();	
-//		DealerUIInstance.FaceValueText.text = collectiveFaceValue.ToString();
-		
+		drawnValue = _currentCardSlot.FaceValue();
+		int collectiveFaceValue = _prior0CardSlot.FaceValue();
+		collectiveFaceValue += _prior1CardSlot.FaceValue();
+		collectiveFaceValue += _prior2CardSlot.FaceValue();
+		collectiveFaceValue += _prior3CardSlot.FaceValue();
+		collectiveFaceValue += _prior4CardSlot.FaceValue();
+		collectiveFaceValue += _prior5CardSlot.FaceValue();
+		collectiveFaceValue += _currentCardSlot.FaceValue();
+		currentCollectiveCardValue = collectiveFaceValue;
+		print(collectiveFaceValue);
+		//DealerUIInstance.FaceValueText.text = collectiveFaceValue.ToString();
+		BlackjackGameManager.Instance.CheckScore();
 		DealInProgress--;
-	}	
+		tcs.SetResult(drawnValue);
+	}
+
+	public async Task<int> PlayerDrawCard()
+	{
+		// Create a TaskCompletionSource
+		var tcs = new TaskCompletionSource<int>();
+
+		// Start the coroutine and pass the TaskCompletionSource
+		StartCoroutine(DrawCoroutine(tcs));
+
+		// Wait for the coroutine to complete and return the result
+		return await tcs.Task;
+	}
 }

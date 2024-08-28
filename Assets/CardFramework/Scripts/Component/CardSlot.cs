@@ -22,15 +22,24 @@ public class CardSlot : MonoBehaviour
 		GetComponent<MeshRenderer>().enabled = false;
 	}
 
-	public string FaceValue()
+	// public string FaceValue()
+	// {
+	// 	if(TopCard() != null)
+	// 		return TopCard().FaceValue;
+	// 	else {
+	// 		return " ";
+	// 	}
+	// }
+	public int FaceValue()
 	{
-		if(TopCard() != null)
+		if (TopCard() != null)
 			return TopCard().FaceValue;
-		else {
-			return " ";
+		else
+		{
+			return 0;
 		}
 	}
-    
+
 	public Card TopCard()
 	{
 		if (CardList.Count > 0)
@@ -66,7 +75,7 @@ public class CardSlot : MonoBehaviour
 			card.ParentCardSlot = this;
 			CardList.Add(card);
 			card.TargetTransform.rotation = transform.rotation;
-			card.TargetTransform.Rotate(card.TargetTransform.forward  * Time.deltaTime, Random.Range(-.4f, .4f), Space.Self);
+			card.TargetTransform.Rotate(card.TargetTransform.forward  * Time.deltaTime* BlackjackGameManager.Instance.dealSpeed, Random.Range(-.4f, .4f), Space.Self);
 			float cardHeight = card.GetComponent<BoxCollider>().size.z;
 			card.TargetTransform.position = transform.position;
 			if (_inverseStack)
