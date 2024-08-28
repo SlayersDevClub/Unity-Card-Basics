@@ -23,28 +23,28 @@ public class BlackjackStateMachine : MonoBehaviour
         TransitionToState(currentState);
     }
 
-    void Update()
-    {
-        // Game loop
-        switch (currentState)
-        {
-            case GameState.Phase0_DrawDecks:
-                HandlePhase0();
-                break;
-            case GameState.Phase1_PlayerTurn:
-                HandlePhase1();
-                break;
-            case GameState.Phase2_AITurn:
-                HandlePhase2();
-                break;
-            case GameState.Phase3_CalculateScores:
-                HandlePhase3();
-                break;
-            case GameState.Phase4_EndGame:
-                HandlePhase4();
-                break;
-        }
-    }
+    //void Update()
+    //{
+    //    // Game loop
+    //    switch (currentState)
+    //    {
+    //        case GameState.Phase0_DrawDecks:
+    //            HandlePhase0();
+    //            break;
+    //        case GameState.Phase1_PlayerTurn:
+    //            HandlePhase1();
+    //            break;
+    //        case GameState.Phase2_AITurn:
+    //            HandlePhase2();
+    //            break;
+    //        case GameState.Phase3_CalculateScores:
+    //            HandlePhase3();
+    //            break;
+    //        case GameState.Phase4_EndGame:
+    //            HandlePhase4();
+    //            break;
+    //    }
+    //}
 
     void TransitionToState(GameState newState)
     {
@@ -55,16 +55,18 @@ public class BlackjackStateMachine : MonoBehaviour
                 HandlePhase0();
                 break;
             case GameState.Phase1_PlayerTurn:
-                // Player decides to hit or stand
+                HandlePhase1();
                 break;
             case GameState.Phase2_AITurn:
-                // AI decides to hit or stand
+                //Invoke("HandlePhase2", 2f);
+                HandlePhase2();
                 break;
             case GameState.Phase3_CalculateScores:
-                // Calculate and apply damage
+                //Invoke("HandlePhase3", 2f);
+                HandlePhase3();
                 break;
             case GameState.Phase4_EndGame:
-                // Determine winner and end game
+                HandlePhase4();
                 break;
         }
     }
@@ -132,6 +134,8 @@ public class BlackjackStateMachine : MonoBehaviour
             TransitionToState(GameState.Phase3_CalculateScores);
             return;
         }
+        if(playerStood)
+            TransitionToState(GameState.Phase2_AITurn);
     }
 
     void HandlePhase2()
@@ -147,6 +151,8 @@ public class BlackjackStateMachine : MonoBehaviour
             aiStood = true;
             print("AI STOOD");
             aiHits = false;
+
+
         }
         if (aiHits)
         {
@@ -167,9 +173,12 @@ public class BlackjackStateMachine : MonoBehaviour
             if (aiScore < 21)
             {
                 if(!playerStood)
+                {
                     TransitionToState(GameState.Phase1_PlayerTurn);
+                }
+
                 else
-                    return;
+                    HandlePhase2();
             }
             else{
                 aiBroke = true;
@@ -179,9 +188,8 @@ public class BlackjackStateMachine : MonoBehaviour
         {
             if (!playerBroke)
                 TransitionToState(GameState.Phase1_PlayerTurn);
-            else
-            // AI stands, calculate scores
-            TransitionToState(GameState.Phase3_CalculateScores);
+            if(playerStood)
+                TransitionToState(GameState.Phase3_CalculateScores);
         }
     }
 
@@ -192,34 +200,38 @@ public class BlackjackStateMachine : MonoBehaviour
         int scoreDifference = Mathf.Abs(playerScore - aiScore);
 
         // Apply damage to the opposing side
-
-        if (playerScore > aiScore && !playerBroke)
+        if (!playerBroke)
         {
             if (aiBroke)
-            {      
+            {
                 aiHealth -= playerScore;
-            } 
+                BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth, playerScore);
+            }
             else
             {
-                aiHealth -= scoreDifference;
-            
+                if (playerScore > aiScore)
+                {
+                    aiHealth -= scoreDifference;
+                    BlackjackUIManager.Instance.AITakeDamage(aiHealth, scoreDifference);
+                }
             }
             Debug.Log("AI takes damage. AI Health: " + aiHealth);
-            BlackjackUIManager.Instance.AITakeDamage(aiHealth);
+
         }
-        if (aiScore > playerScore && !aiBroke)
-        {
+            
+        if (!aiBroke)
+        {          
                 if (playerBroke)
                 {
                     playerHealth -= aiScore;
-                }
+                BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth, aiScore);
+            }
                 else
                 {
-                    playerHealth -= scoreDifference;
-                }
-
-            Debug.Log("Player takes damage. Player Health: " + playerHealth);
-            BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth);
+                    if (aiScore > playerScore)
+                        playerHealth -= scoreDifference;
+                BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth, scoreDifference);
+            }           
         }
 
         // Check for end game condition

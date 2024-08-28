@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -12,6 +12,8 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
 
     public TextMeshProUGUI playerScore, aiScore;
     public Image playerHealthbar, enemyHealthbar;
+
+    public TextMeshProUGUI damageTextPrefab;
 
     void Start()
     {
@@ -55,13 +57,37 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         aiScore.SetText(score.ToString());
     }
 
-    public void PlayerTakeDamage(int health)
+    public void PlayerTakeDamage(int health, int damage)
     {
         playerHealthbar.fillAmount = (float)health/100;
+        ShowDamage(damage, playerHealthbar);
     }
 
-    public void AITakeDamage(int health)
+    public void AITakeDamage(int health, int damage)
     {
         enemyHealthbar.fillAmount = (float)health/100;
+        ShowDamage(damage, playerHealthbar);
+    }
+
+
+
+    public void ShowDamage(int damageAmount, Image healthBar)
+    {
+        // Instantiate the damage text
+        TextMeshProUGUI damageText = Instantiate(damageTextPrefab, healthBar.rectTransform.position, Quaternion.identity, healthBar.rectTransform.parent);
+
+        // Set the damage amount
+        damageText.text = damageAmount.ToString();
+
+        // Animate the text falling off the health bar
+        Vector3 targetPosition = healthBar.rectTransform.position + new Vector3(0, -100f, 0); // Adjust the Y offset as needed
+        damageText.transform.DOMove(targetPosition, 1f).SetEase(Ease.OutQuad);
+
+        // Animate the alpha (fade out)
+        damageText.DOFade(0, 1f).SetEase(Ease.InQuad).OnComplete(() =>
+        {
+            // Destroy the text after the animation
+            Destroy(damageText.gameObject);
+        });
     }
 }
