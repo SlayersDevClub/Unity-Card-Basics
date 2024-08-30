@@ -4,78 +4,37 @@ using System.Collections.Generic;
 
 public class BundleSingleton : Singleton<BundleSingleton>
 {
-	private readonly List<AssetBundle> AssetBundleList = new List<AssetBundle>();
-	
-	private void Awake ()
-	{
-		if (_currentLevelAssetBundle != null)
-		{
-			_currentLevelAssetBundle.Unload(false);
-			_currentLevelAssetBundle = null;
-		}	
-	}
-	
-	public void OnDestroy()
-	{
-		UnloadAllBundles();
-	}	
+	public CardCollection cardCollection;
 
-	private AssetBundle GetBundle(string name)
+	private void Awake()
 	{
-		for (int i = 0; i < AssetBundleList.Count; ++i)
+		// Load the CardCollection ScriptableObject from Resources or assign it manually in the Inspector
+		cardCollection = Resources.Load<CardCollection>("CardCollection");
+
+		if (cardCollection == null)
 		{
-			if (name == AssetBundleList[i].name)
+			Debug.LogError("CardCollection not found in Resources!");
+		}
+	}
+
+	public Card GetCard(string cardName)
+	{
+		if (cardCollection != null)
+		{
+			foreach (var card in cardCollection.cards)
 			{
-				return AssetBundleList[i];
+				if (card.cardName == cardName)
+				{
+					//return card;
+				}
 			}
 		}
 		return null;
 	}
 
-	public AssetBundle LoadBundle(string path)
+	public List<CardData> GetAllCards()
 	{
-		string name = System.IO.Path.GetFileNameWithoutExtension(path);
-		AssetBundle assetBundle = GetBundle(name);
-		if (assetBundle == null)
-		{
-			//assetBundle = new AssetBundle();
-			//assetBundle = AssetBundle.LoadFromFile(path);
-
-			assetBundle = AssetBundle.LoadFromFile(System.IO.Path.Combine(Application.streamingAssetsPath, path));
-			assetBundle.name = name;
-			AssetBundleList.Add(assetBundle);
-			return assetBundle;
-		}
-		else
-		{
-			return assetBundle;
-		}
+		return cardCollection != null ? new List<CardData>(cardCollection.cards) : new List<CardData>();
 	}
-
-	private void UnloadAllBundles()
-	{
-		for (int i = 0; i < AssetBundleList.Count; ++i)
-		{
-			AssetBundleList[i].Unload(false);
-		}
-		AssetBundleList.Clear();
-	}
-	
-	public void LoadLevelAssetBundle(string level)
-	{
-		string path = DirectoryUtility.ExternalAssets() + level + ".assetBundle";
-		Debug.Log("LoadLevelAssetBundle: " + path);
-		_currentLevelAssetBundle = AssetBundle.LoadFromFile(path);
-		if (_currentLevelAssetBundle != null && Application.CanStreamedLevelBeLoaded(level))
-		{
-			BundleSingleton.Instance.UnloadAllBundles();
-			Application.LoadLevel(level);	
-		}
-		else
-		{
-			Debug.Log("AssetBundle Not Found: " + path);
-		}
-	}
-	static private AssetBundle _currentLevelAssetBundle;
 }
 

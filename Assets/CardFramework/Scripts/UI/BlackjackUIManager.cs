@@ -10,7 +10,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     public Button hitButton;
     public Button standButton;
 
-    public TextMeshProUGUI playerScore, aiScore;
+    public TextMeshProUGUI playerScore, aiScore, outputText;
     public Image playerHealthbar, enemyHealthbar;
 
     public TextMeshProUGUI damageTextPrefab;
@@ -21,9 +21,9 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         standButton.onClick.AddListener(OnStandButtonClicked);
     }
 
-    void OnHitButtonClicked()
+    async void OnHitButtonClicked()
     {
-        blackjackStateMachine.PlayerHits();
+        await blackjackStateMachine.PlayerHits();
     }
 
     void OnStandButtonClicked()
@@ -61,12 +61,15 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     {
         playerHealthbar.fillAmount = (float)health/100;
         ShowDamage(damage, playerHealthbar);
+        FlashRed();
+        ShakeCamera();
     }
 
     public void AITakeDamage(int health, int damage)
     {
         enemyHealthbar.fillAmount = (float)health/100;
-        ShowDamage(damage, playerHealthbar);
+        ShowDamage(damage, enemyHealthbar);
+        DOTween.Play("hit");
     }
 
 
@@ -80,8 +83,8 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         damageText.text = damageAmount.ToString();
 
         // Animate the text falling off the health bar
-        Vector3 targetPosition = healthBar.rectTransform.position + new Vector3(0, -100f, 0); // Adjust the Y offset as needed
-        damageText.transform.DOMove(targetPosition, 1f).SetEase(Ease.OutQuad);
+        Vector3 targetPosition = healthBar.rectTransform.position + new Vector3(30, -100f, 0); // Adjust the Y offset as needed
+        damageText.transform.DOMove(targetPosition, 2f).SetEase(Ease.OutQuad);
 
         // Animate the alpha (fade out)
         damageText.DOFade(0, 1f).SetEase(Ease.InQuad).OnComplete(() =>
@@ -89,5 +92,52 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
             // Destroy the text after the animation
             Destroy(damageText.gameObject);
         });
+    }
+    private Tween currentTween;
+    public void ShowText(string message, float displayDuration = 2f, float fadeDuration = 0.5f)
+    {
+        // Interrupt current tween if it's running
+        if (currentTween != null && currentTween.IsActive())
+        {
+            currentTween.Kill();
+        }
+
+        // Set the text
+        outputText.SetText(message);
+
+        // Start with fully transparent text
+        outputText.alpha = 0f;
+
+        // Fade in
+        currentTween = outputText.DOFade(1f, fadeDuration).OnComplete(() =>
+        {
+            // Keep the text displayed for `displayDuration` seconds
+            currentTween = DOVirtual.DelayedCall(displayDuration, () =>
+            {
+                // Fade out
+                currentTween = outputText.DOFade(0f, fadeDuration);
+            });
+        });
+    }
+
+    [SerializeField] private Image damageImage;  // Assign a full-screen UI Image with red color and 0 alpha
+    [SerializeField] private float flashDuration = 0.2f;
+    [SerializeField] private float flashAlpha = 0.5f;
+
+    public void FlashRed()
+    {
+        damageImage.DOFade(flashAlpha, flashDuration / 2)
+            .OnComplete(() => damageImage.DOFade(0, flashDuration / 2));
+    }
+
+
+    [SerializeField] private float shakeDuration = 0.5f;
+    [SerializeField] private float shakeStrength = 1f;
+    [SerializeField] private int shakeVibrato = 10;
+    [SerializeField] private float shakeRandomness = 90f;
+
+    public void ShakeCamera()
+    {
+        Camera.main.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato, shakeRandomness);
     }
 }

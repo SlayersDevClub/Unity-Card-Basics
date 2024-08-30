@@ -59,7 +59,7 @@ public class Dealer : MonoBehaviour
 	private void Awake()
 	{
 		//_cardDeck.InstanatiateDeck("tarotbasic");
-		_cardDeck.InstanatiateDeck("cards");
+		_cardDeck.InstantiateDeck();
 		StartCoroutine(StackCardRangeOnSlot(0, _cardDeck.CardList.Count, _stackCardSlot));
 	}
     

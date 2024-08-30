@@ -12,37 +12,46 @@ public class CardDeck : MonoBehaviour
 
 	public Dictionary<string, string> tarotCardsDescriptions = new Dictionary<string, string>();
 	
-	public readonly List<Card> CardList =  new List<Card>();							
+	public readonly List<Card> CardList =  new List<Card>();
 
-	public void InstanatiateDeck(string cardBundlePath)
+	public void InstantiateDeck()
 	{
-		SetDictionary ();
-		//AssetBundle cardBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, cardBundlePath));
-		AssetBundle cardBundle = BundleSingleton.Instance.LoadBundle(cardBundlePath);
-			//BundleSingleton.Instance.LoadBundle(Application.streamingAssetsPath +"/"+ cardBundlePath);
+		SetDictionary();
 
-		//AssetBundle cardBundle = BundleSingleton.Instance.LoadBundle(DirectoryUtility.ExternalAssets() + cardBundlePath);
+		// Get all cards from the ScriptableObject
+		List<CardData> allCards = BundleSingleton.Instance.GetAllCards();
 
-		string[] nameArray = cardBundle.GetAllAssetNames();
+		// Convert the list to an array if you need to shuffle it
+		CardData[] cardArray = allCards.ToArray();
 
-		
+		// Shuffle the array
+		ShuffleArray(cardArray);
 
-		ShuffleArray (nameArray);
-
-		for (int i = 0; i < nameArray.Length; ++i)
+		for (int i = 0; i < cardArray.Length; ++i)
 		{
-			string NameTemp = Path.GetFileNameWithoutExtension (nameArray [i]);
+			// Get the current card from the shuffled array
+			CardData cardData = cardArray[i];
+
+			// Instantiate the card prefab
 			GameObject cardInstance = (GameObject)Instantiate(_cardPrefab);
 			Card card = cardInstance.GetComponent<Card>();
-			card.gameObject.name = StringToNameValue(NameTemp);
-			card.TexturePath = nameArray[ i ];
-			card.SourceAssetBundlePath = cardBundlePath;
+
+			// Set card properties based on the ScriptableObject data
+			card.gameObject.name = cardData.cardName;
+			//card.TexturePath = ""; // You can remove this if you're not using a texture path anymore
+			//card.SourceAssetBundlePath = ""; // You can remove this since we're no longer using AssetBundles
 			card.transform.position = new Vector3(0, 1, 0);
-			card.FaceValue = StringToFaceValue(NameTemp);
-			card.Description = StringToDescriptionValue (NameTemp);
+			card.FaceValue = cardData.FaceValue;
+			card.Description = StringToDescriptionValue(cardData.cardName);
+
+			// Assuming the card prefab has a method to set its visual representation:
+			card.SetCardImage(cardData.cardImage);
+
+			// Add the instantiated card to the card list
 			CardList.Add(card);
 		}
 	}
+
 
 	// Use this for initialization
 	void SetDictionary () {

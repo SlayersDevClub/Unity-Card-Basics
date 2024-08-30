@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class Card : MonoBehaviour 
-{	
+{	public string cardName;
 	public string TexturePath { get; set; }
 	
 	public string SourceAssetBundlePath { get; set; }
@@ -39,6 +39,12 @@ public class Card : MonoBehaviour
 	private float _positionDamp = .05f;
 
 	private float _rotationDamp = .05f;   
+
+	public void SetCardImage(Texture image)
+	{
+		GetComponent<Renderer>().material.mainTexture = image;
+		mTexture = image;
+	}
 	
 	private void FixedUpdate()
 	{
@@ -90,11 +96,11 @@ public class Card : MonoBehaviour
 	private void FrontBecameVisible()
 	{
 		
-		AssetBundle cardBundle = BundleSingleton.Instance.LoadBundle(SourceAssetBundlePath);
+		//AssetBundle cardBundle = BundleSingleton.Instance.LoadBundle(SourceAssetBundlePath);
 
 
 
-		GetComponent<Renderer>().material.mainTexture = cardBundle.LoadAsset<Texture>(TexturePath);
+		GetComponent<Renderer>().material.mainTexture = mTexture;
 
 	}
 	
