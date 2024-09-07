@@ -3,7 +3,37 @@ guid: 28d60c2c09a7f124cbf6544c6e79313f
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hammer_LP001Mat
+    second: {fileID: 2100000, guid: 04167b213c1454b67b56980f6caef9eb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: latch_LP002Mat
+    second: {fileID: 2100000, guid: 1334b8d3c5d5a49e78785526d3180182, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: main_LP001Mat
+    second: {fileID: 2100000, guid: 5e309a789f16b45f3bb6c7ea224afb7c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: swing_LP001Mat
+    second: {fileID: 2100000, guid: bedaa9868cd60497e98dc55eda3a6e97, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trigger_HP002Mat
+    second: {fileID: 2100000, guid: a8ec3053ffd0243ee80add4732c9495d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: tumbler_LP001Mat
+    second: {fileID: 2100000, guid: f939a88589dfe4b818279e13bf8fd8e1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

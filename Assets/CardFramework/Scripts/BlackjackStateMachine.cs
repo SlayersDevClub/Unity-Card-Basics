@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections;
+using TMPro.EditorUtilities;
 
 public class BlackjackStateMachine : MonoBehaviour
 {
@@ -14,7 +15,25 @@ public class BlackjackStateMachine : MonoBehaviour
     private int aiHealth = 100;
 
     bool playerStood = false, aiStood = false;
-    bool playerBroke = false, aiBroke = false;
+    bool aiBroke = false;
+
+    bool playerBroke 
+    {
+        get{return _playerBroke;} 
+        set
+        {
+            if(value)
+            {
+                BlackjackUIManager.Instance.ShowPlayerX(true);
+            }
+            else 
+            {
+                BlackjackUIManager.Instance.ShowPlayerX(false);
+            }
+            _playerBroke = value;
+        }
+    }
+    bool _playerBroke;
 
     public Dealer dealerPlayer, dealerAI;
 
@@ -160,8 +179,7 @@ public class BlackjackStateMachine : MonoBehaviour
         if(aiScore >=17 && aiScore  <= 21)
         {
             aiStood = true;
-            print("AI STOOD");
-            BlackjackUIManager.Instance.ShowText("Prisoner stands.");
+            BlackjackUIManager.Instance.ShowAIText("I stand.");
 
             aiHits = false;
 
@@ -180,6 +198,7 @@ public class BlackjackStateMachine : MonoBehaviour
             {
                 TransitionToState(GameState.Phase1_PlayerTurn);
                 aiStood = true;
+                BlackjackUIManager.Instance.ShowAIText("Blackjack, bitch.");
                 return;
             }
 
@@ -193,13 +212,15 @@ public class BlackjackStateMachine : MonoBehaviour
 
                 else
                     HandlePhase2();
+
             }
             else
             {
                 aiBroke = true;
                 aiStood = true;
+                BlackjackUIManager.Instance.ShowAIText("Fuck.. I broke.");
 
-                if(playerBroke)
+                if (playerBroke)
                     TransitionToState(GameState.Phase3_CalculateScores);
                 else
                     TransitionToState(GameState.Phase1_PlayerTurn);
@@ -212,6 +233,9 @@ public class BlackjackStateMachine : MonoBehaviour
                 TransitionToState(GameState.Phase1_PlayerTurn);
             if(playerStood)
                 TransitionToState(GameState.Phase3_CalculateScores);
+
+            BlackjackUIManager.Instance.ShowAIText("I stand.");
+
         }
     }
 
@@ -228,6 +252,8 @@ public class BlackjackStateMachine : MonoBehaviour
                 aiHealth -= playerScore;
                 BlackjackUIManager.Instance.AITakeDamage(aiHealth, playerScore);
                 BlackjackUIManager.Instance.ShowText("Prisoner takes " + playerScore + " damage!");
+                BlackjackUIManager.Instance.ShowAIText("Ouch..");
+
             }
             else
             {
@@ -237,6 +263,8 @@ public class BlackjackStateMachine : MonoBehaviour
                     aiHealth -= scoreDifference;
                     BlackjackUIManager.Instance.AITakeDamage(aiHealth, scoreDifference);
                     BlackjackUIManager.Instance.ShowText("Prisoner takes " + scoreDifference + " damage!");
+                    BlackjackUIManager.Instance.ShowAIText("OUCH!");
+
                 }
             }
         }
@@ -248,6 +276,8 @@ public class BlackjackStateMachine : MonoBehaviour
                 playerHealth -= aiScore;
                 BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth, aiScore);
                 BlackjackUIManager.Instance.ShowText("Player takes " + aiScore + " damage!");
+                BlackjackUIManager.Instance.ShowAIText("Heh.");
+
             }
             else
             {
@@ -257,6 +287,8 @@ public class BlackjackStateMachine : MonoBehaviour
                     playerHealth -= scoreDifference;
                     BlackjackUIManager.Instance.PlayerTakeDamage(playerHealth, scoreDifference);
                     BlackjackUIManager.Instance.ShowText("Player takes " + scoreDifference + " damage!");
+                    BlackjackUIManager.Instance.ShowAIText("Oh yeah..");
+
                 }
 
             }
@@ -300,12 +332,15 @@ public class BlackjackStateMachine : MonoBehaviour
         {
             Debug.Log("AI Wins!");
             BlackjackUIManager.Instance.ShowText("Prisoner wins! Sweet dreams..");
+            BlackjackUIManager.Instance.ShowAIText("Sweet dreams..");
+            BlackjackUIManager.Instance.AIKillPlayer();
         }
         else if (aiHealth <= 0)
         {
             Debug.Log("Player Wins!");
             BlackjackUIManager.Instance.ShowText("You Win!!");
-
+            BlackjackUIManager.Instance.ShowAIText("Oh no..");
+            BlackjackUIManager.Instance.PlayerKillAI();
         }
     }
 

@@ -12,7 +12,6 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
 
     public TextMeshProUGUI playerScore, aiScore, outputText;
     public Image playerHealthbar, enemyHealthbar;
-
     public TextMeshProUGUI damageTextPrefab;
 
     void Start()
@@ -72,7 +71,17 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         DOTween.Play("hit");
     }
 
+    public Animator playerGun, aiGun;
 
+    public void AIKillPlayer()
+    {
+        if(aiGun)aiGun.SetTrigger("Shoot");
+    }
+
+    public void PlayerKillAI()
+    {
+        if(playerGun)playerGun.SetTrigger("Shoot");
+    }
 
     public void ShowDamage(int damageAmount, Image healthBar)
     {
@@ -119,8 +128,32 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
             });
         });
     }
+    public Canvas aiCanvas;
 
-    [SerializeField] private Image damageImage;  // Assign a full-screen UI Image with red color and 0 alpha
+    public TextMeshProUGUI AIVoiceText;
+
+    public void ShowAIText(string message, float displayDuration = 2f, float fadeDuration = 0.5f)
+    {
+        Tween currentTween;
+
+        GameObject aiVoiceObj = (GameObject)Instantiate(AIVoiceText.gameObject, aiCanvas.transform) as GameObject;
+        TextMeshProUGUI AIVoiceTxt = aiVoiceObj.GetComponent<TextMeshProUGUI>();
+
+        AIVoiceTxt.SetText(message);
+        AIVoiceTxt.alpha = 0f;
+
+        // Fade in
+        currentTween = AIVoiceTxt.DOFade(1f, fadeDuration).OnComplete(() =>
+        {
+
+            currentTween = AIVoiceTxt.DOFade(0f, fadeDuration).SetDelay(displayDuration);
+
+        });
+
+        AIVoiceTxt.GetComponent<DOTweenAnimation>().DORewindAndPlayNext();
+    }
+
+    [SerializeField] private Image damageImage, blackImage;  // Assign a full-screen UI Image with red color and 0 alpha
     [SerializeField] private float flashDuration = 0.2f;
     [SerializeField] private float flashAlpha = 0.5f;
 
@@ -129,6 +162,44 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         damageImage.DOFade(flashAlpha, flashDuration / 2)
             .OnComplete(() => damageImage.DOFade(0, flashDuration / 2));
     }
+    public void FadeToBlack()
+    {
+        blackImage.color = Color.white;
+        blackImage.DOFade(.9f, flashDuration / 2).OnComplete(() =>
+        {
+            blackImage.DOColor(Color.black, flashDuration/3);
+            blackImage.DOFade(1, flashDuration / 2).SetDelay(flashDuration);
+
+        });
+    }
+
+    public void PlayerKilledFlash()
+    {
+        blackImage.color = Color.white;
+        blackImage.DOFade(.9f, flashDuration / 2).OnComplete(() =>
+        {
+            blackImage.DOFade(0, flashDuration / 2).SetDelay(flashDuration);
+
+        });
+    }
+    public void AIKillPlayerFlash()
+    {
+        blackImage.color = Color.white;
+        blackImage.DOFade(.9f, flashDuration / 2).OnComplete(() =>
+        {
+            blackImage.DOColor(Color.black, flashDuration / 2);
+            blackImage.DOFade(255, flashDuration / 2).SetDelay(flashDuration);
+
+        });
+    }
+    public GameObject playerBreakImage;
+    public void ShowPlayerX(bool b)
+    {
+        if(!b)
+        playerBreakImage.SetActive(false);
+        else
+        playerBreakImage.SetActive(true);
+    }
 
 
     [SerializeField] private float shakeDuration = 0.5f;
@@ -136,8 +207,13 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     [SerializeField] private int shakeVibrato = 10;
     [SerializeField] private float shakeRandomness = 90f;
 
+    Tween camShakeTween;
     public void ShakeCamera()
     {
-        Camera.main.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato, shakeRandomness);
+        if(camShakeTween == null)
+            camShakeTween = Camera.main.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato, shakeRandomness).SetAutoKill(false);
+
+            camShakeTween.Rewind();
+            camShakeTween.Play();
     }
 }
