@@ -13,6 +13,8 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     public TextMeshProUGUI playerScore, aiScore, outputText;
     public Image playerHealthbar, enemyHealthbar;
     public TextMeshProUGUI damageTextPrefab;
+    public AttackFXMover spawner;
+    public RectTransform player, enemy;
 
     void Start()
     {
@@ -62,6 +64,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         ShowDamage(damage, playerHealthbar);
         FlashRed();
         ShakeCamera();
+        spawner.SpawnProjectile(enemy, player);
     }
 
     public void AITakeDamage(int health, int damage)
@@ -69,6 +72,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         enemyHealthbar.fillAmount = (float)health/100;
         ShowDamage(damage, enemyHealthbar);
         DOTween.Play("hit");
+        spawner.SpawnProjectile(player, enemy);
     }
 
     public Animator playerGun, aiGun;
