@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 1878250578
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: tarotbasic
+      Dependencies: {}
+    Info_1:
+      Name: cards
+      Dependencies: {}

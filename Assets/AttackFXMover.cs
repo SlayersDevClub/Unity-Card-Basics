@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening; // DOTween namespace
+using System.Collections;
 
 public class AttackFXMover : MonoBehaviour
 {
@@ -20,31 +21,47 @@ public class AttackFXMover : MonoBehaviour
         if (GUI.Button(new Rect(10, Screen.height - 50, 150, 30), "Spawn Projectile"))
         {
             // Example transforms; adjust these to fit your needs
-            Transform exampleStart = BlackjackUIManager.Instance.player; // Use the current object for example
-            Transform exampleEnd = BlackjackUIManager.Instance.enemy;   // Use the current object for example
+            Transform exampleStart = BlackjackStateMachine.Instance.player; // Use the current object for example
+            Transform exampleEnd = BlackjackStateMachine.Instance.enemy;   // Use the current object for example
 
             // Call the function with example transforms
-            SpawnProjectile(exampleStart, exampleEnd);
+            StartCoroutine(SpawnProjectileCoroutine(exampleStart, exampleEnd));
         }
     }
 
-    public void SpawnProjectile(Transform startTransform, Transform endTransform)
+    public void SpawnProjectile(Transform startPos, Transform endPos, int count = 1)
     {
+        StartCoroutine(SpawnProjectileCoroutine(startPos,endPos, count));
+    }
+
+
+
+    public IEnumerator SpawnProjectileCoroutine(Transform startTransform, Transform endTransform, int count = 1)
+    {
+        for(int i = 0; i < count; i++)
+        {
         // Instantiate the object at the specified start transform position
         GameObject obj = Instantiate(prefab, startTransform.position, Quaternion.identity);
 
         // Create the parabolic path
         Vector3[] path = CreateParabolaPath(startTransform.position, endTransform.position, height);
 
-        // Animate the object along the parabolic path
+        // Start the animation along the parabolic path
         obj.transform.DOPath(path, duration, PathType.CatmullRom)
             .SetEase(easeType)   // Use exposed ease type
             .OnStart(() => BounceTransform(startTransform)) // Bounce start transform
-            .OnComplete(() => {
+            .OnComplete(() =>
+            {
                 ShakeTransform(endTransform); // Shake end transform
                 Destroy(obj); // Destroy object on completion
+                BlackjackUIManager.Instance.ShakeCamera();
             });
+
+        // Yield until the animation duration is complete
+        yield return new WaitForSeconds(.1f);
+        }
     }
+
 
     private void BounceTransform(Transform transform)
     {
@@ -52,16 +69,20 @@ public class AttackFXMover : MonoBehaviour
         transform.DOPunchPosition(Vector3.up * bounceStrength, bounceDuration, bounceVibrato)
             .SetEase(Ease.OutBounce);
     }
-
+    Tween shake;
+    Vector3 startShakePos;
     private void ShakeTransform(Transform transform)
     {
-        // Store the original position
         Vector3 originalPosition = transform.position;
+        if(shake == null) shake = transform.DOShakePosition(shakeDuration, shakeStrength).SetEase(Ease.Linear).SetAutoKill(true).OnComplete(() =>
+        {
+            transform.localPosition = Vector3.zero;
+            shake = null;
 
-        // Apply a shake effect to simulate a shake
-        transform.DOShakePosition(shakeDuration, shakeStrength)
-            .OnKill(() => transform.position = originalPosition) // Ensure position is reset
-            .SetEase(Ease.Linear);
+        }); 
+
+        shake.Rewind();
+        shake.Play();
     }
 
     // Function to create a parabolic path using a set of points

@@ -1,4 +1,4 @@
-using Microsoft.Unity.VisualStudio.Editor;
+
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CardCollection", menuName = "Card Game/Card Collection")]

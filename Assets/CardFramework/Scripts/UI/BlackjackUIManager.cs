@@ -3,6 +3,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class BlackjackUIManager : Singleton<BlackjackUIManager>
 {
@@ -11,15 +12,17 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     public Button standButton;
 
     public TextMeshProUGUI playerScore, aiScore, outputText;
-    public Image playerHealthbar, enemyHealthbar;
+    public Image playerHealthbar, enemyHealthbar, playerArmorBar, enemyArmorBar;
     public TextMeshProUGUI damageTextPrefab;
     public AttackFXMover spawner;
-    public RectTransform player, enemy;
+
 
     void Start()
     {
         hitButton.onClick.AddListener(OnHitButtonClicked);
         standButton.onClick.AddListener(OnStandButtonClicked);
+
+        
     }
 
     async void OnHitButtonClicked()
@@ -47,34 +50,107 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
                 break;
         }
     }
+    public GameObject bulletPrefab;
+    public Transform buleltPlayerSpawnLocator, bulletEnemySpawnLocator;
+    List<GameObject> playerBulletsList = new List<GameObject>();
+    List<GameObject> enemyBulletList = new List<GameObject>();
 
+    Vector2 areaSize = new Vector2(.125f,.125f);
+    int previousPlayerBulletCount = 0, previousEnemyBulletCount = 0;
     public void UpdatePlayerScore(int score)
     {
         playerScore.SetText(score.ToString());
+        if(score < 2)
+        {
+            previousPlayerBulletCount = 0;
+            if(playerBulletsList.Count > 0){
+                foreach(GameObject g in playerBulletsList)
+                {
+                    Destroy(g);
+                }
+
+            playerBulletsList.Clear();
+        }
+        }
+        else
+        {
+            int playerBulletsListToSpawn = score - previousPlayerBulletCount;
+            StartCoroutine(SpawnObjectsOverTime(playerBulletsListToSpawn, buleltPlayerSpawnLocator, true, false));
+
+        }
+
+    }
+
+    IEnumerator SpawnObjectsOverTime(int numberOfObjects, Transform spawnLocation, bool isPlayer, bool wait = false)
+    {
+        if(wait)
+        yield return new WaitForSeconds(1f);
+
+        for (int i = 0; i < numberOfObjects; i++)
+        {
+            // Generate a random position within the rectangular area relative to the target
+            Vector3 randomOffset = new Vector3(
+                Random.Range(-areaSize.x / 2, areaSize.x / 2),
+                0,
+                Random.Range(-areaSize.y / 2, areaSize.y / 2)
+            );
+
+            Vector3 spawnPosition;
+            
+            if (isPlayer)
+                spawnPosition = buleltPlayerSpawnLocator.position + randomOffset;
+            else
+               spawnPosition = bulletEnemySpawnLocator.position + randomOffset;
+
+            // Instantiate the object at the calculated spawn position
+            GameObject tmpGo = Instantiate(bulletPrefab, spawnPosition, Quaternion.identity);
+            if (isPlayer)
+                playerBulletsList.Add(tmpGo);
+                else
+                enemyBulletList.Add(tmpGo);
+
+            // Wait for the spawnInterval before spawning the next object
+            yield return new WaitForSeconds(.05f);
+        }
+        //previousPlayerBulletCount = numberOfObjects;
     }
 
     public void UpdateAIScore(int score)
     {
         aiScore.SetText(score.ToString());
+        if (score < 2)
+        {
+            previousEnemyBulletCount = 0;
+            if (enemyBulletList.Count > 0)
+            {
+                foreach (GameObject g in enemyBulletList)
+                {
+                    Destroy(g);
+                }
+
+                enemyBulletList.Clear();
+            }
+        }
+        else
+        {
+            int bulletsListToSpawn = score - previousEnemyBulletCount;
+            StartCoroutine(SpawnObjectsOverTime(bulletsListToSpawn, bulletEnemySpawnLocator,false, true));
+
+        }
     }
 
-    public void PlayerTakeDamage(int health, int damage)
+
+    public void RemoveOneObjectFromList(bool isPlayer = false)
     {
-        playerHealthbar.fillAmount = (float)health/100;
-        ShowDamage(damage, playerHealthbar);
-        FlashRed();
-        ShakeCamera();
-        spawner.SpawnProjectile(enemy, player);
+        if(isPlayer)
+        {
+            Destroy(playerBulletsList[playerBulletsList.Count -1]);
+        }
+        else 
+        {
+            Destroy(playerBulletsList[enemyBulletList.Count - 1]);
+        }
     }
-
-    public void AITakeDamage(int health, int damage)
-    {
-        enemyHealthbar.fillAmount = (float)health/100;
-        ShowDamage(damage, enemyHealthbar);
-        DOTween.Play("hit");
-        spawner.SpawnProjectile(player, enemy);
-    }
-
     public Animator playerGun, aiGun;
 
     public void AIKillPlayer()
@@ -196,15 +272,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
 
         });
     }
-    public GameObject playerBreakImage;
-    public void ShowPlayerX(bool b)
-    {
-        if(!b)
-        playerBreakImage.SetActive(false);
-        else
-        playerBreakImage.SetActive(true);
-    }
-
+    public GameObject playerBreakImage, aiBreakImage;
 
     [SerializeField] private float shakeDuration = 0.5f;
     [SerializeField] private float shakeStrength = 1f;

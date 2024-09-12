@@ -211,9 +211,8 @@ public class Dealer : MonoBehaviour
 		collectiveFaceValue += _prior5CardSlot.FaceValue();
 		collectiveFaceValue += _currentCardSlot.FaceValue();
 		currentCollectiveCardValue = collectiveFaceValue;
-		print(collectiveFaceValue);
 		//DealerUIInstance.FaceValueText.text = collectiveFaceValue.ToString();
-		BlackjackGameManager.Instance.CheckScore();
+		//BlackjackGameManager.Instance.CheckScore();
 		DealInProgress--;
 		tcs.SetResult(drawnValue);
 	}

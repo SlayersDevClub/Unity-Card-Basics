@@ -50,6 +50,11 @@ public class Card : MonoBehaviour
 	{
 		SmoothToTargetPositionRotation();
 	}
+
+	public void UseCard()
+	{
+		print("Card used");
+	}
 	
 	public void SetDamp(float newPositionDamp, float newRotationDamp)
 	{
