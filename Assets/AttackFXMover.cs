@@ -29,14 +29,14 @@ public class AttackFXMover : MonoBehaviour
         }
     }
 
-    public void SpawnProjectile(Transform startPos, Transform endPos, int count = 1)
+    public void SpawnProjectile(Transform startPos, Transform endPos, int count = 1, bool isPlayer = false)
     {
-        StartCoroutine(SpawnProjectileCoroutine(startPos,endPos, count));
+        StartCoroutine(SpawnProjectileCoroutine(startPos,endPos, count, isPlayer));
     }
 
 
 
-    public IEnumerator SpawnProjectileCoroutine(Transform startTransform, Transform endTransform, int count = 1)
+    public IEnumerator SpawnProjectileCoroutine(Transform startTransform, Transform endTransform, int count = 1, bool isPlayer = false)
     {
         for(int i = 0; i < count; i++)
         {
@@ -55,12 +55,19 @@ public class AttackFXMover : MonoBehaviour
                 ShakeTransform(endTransform); // Shake end transform
                 Destroy(obj); // Destroy object on completion
                 BlackjackUIManager.Instance.ShakeCamera();
+                if(isPlayer)
+                {
+                    BlackjackUIManager.Instance.RemoveOneObjectFromList(true);
+                } else {
+                    BlackjackUIManager.Instance.RemoveOneObjectFromList(false);
+                }
             });
-
         // Yield until the animation duration is complete
         yield return new WaitForSeconds(.1f);
         }
     }
+
+
 
 
     private void BounceTransform(Transform transform)

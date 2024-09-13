@@ -271,7 +271,6 @@ public class BlackjackStateMachine : Singleton<BlackjackStateMachine>
             }
             if(aiScore > playerScore)
             {
-                print("HERE is where we doing it");
                 scoreDifference = Mathf.Abs(aiScore - playerScore);
                 playerHealth -= scoreDifference;
                 PlayerTakeDamage(playerHealth, scoreDifference);
@@ -313,13 +312,12 @@ public class BlackjackStateMachine : Singleton<BlackjackStateMachine>
         StartCoroutine(TransitionToState(GameState.Phase1_PlayerTurn));
     }
 
-
     public RectTransform player, enemy;
     public void PlayerTakeDamage(int health, int damage)
     {
         tmpDamage = damage;
         tmpHealth = health;
-        BlackjackUIManager.Instance.spawner.SpawnProjectile(enemy, player, damage);
+        BlackjackUIManager.Instance.spawner.SpawnProjectile(enemy, player, damage, true);
         Invoke("PlayerTakeDamageDelay", 1f);
 
     }

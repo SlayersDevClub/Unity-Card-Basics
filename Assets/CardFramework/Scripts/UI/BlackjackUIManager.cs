@@ -16,13 +16,11 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     public TextMeshProUGUI damageTextPrefab;
     public AttackFXMover spawner;
 
-
     void Start()
     {
         hitButton.onClick.AddListener(OnHitButtonClicked);
         standButton.onClick.AddListener(OnStandButtonClicked);
 
-        
     }
 
     async void OnHitButtonClicked()
@@ -75,16 +73,17 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         else
         {
             int playerBulletsListToSpawn = score - previousPlayerBulletCount;
-            StartCoroutine(SpawnObjectsOverTime(playerBulletsListToSpawn, buleltPlayerSpawnLocator, true, false));
+            StartCoroutine(SpawnObjectsOverTime(playerBulletsListToSpawn, buleltPlayerSpawnLocator, false));
 
         }
 
     }
 
-    IEnumerator SpawnObjectsOverTime(int numberOfObjects, Transform spawnLocation, bool isPlayer, bool wait = false)
+    IEnumerator SpawnObjectsOverTime(int numberOfObjects, Transform spawnLocation, bool wait = false)
     {
         if(wait)
         yield return new WaitForSeconds(1f);
+
 
         for (int i = 0; i < numberOfObjects; i++)
         {
@@ -96,15 +95,11 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
             );
 
             Vector3 spawnPosition;
-            
-            if (isPlayer)
-                spawnPosition = buleltPlayerSpawnLocator.position + randomOffset;
-            else
-               spawnPosition = bulletEnemySpawnLocator.position + randomOffset;
+            spawnPosition = spawnLocation.position + randomOffset;
 
             // Instantiate the object at the calculated spawn position
             GameObject tmpGo = Instantiate(bulletPrefab, spawnPosition, Quaternion.identity);
-            if (isPlayer)
+            if (!wait)
                 playerBulletsList.Add(tmpGo);
                 else
                 enemyBulletList.Add(tmpGo);
@@ -134,7 +129,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         else
         {
             int bulletsListToSpawn = score - previousEnemyBulletCount;
-            StartCoroutine(SpawnObjectsOverTime(bulletsListToSpawn, bulletEnemySpawnLocator,false, true));
+            StartCoroutine(SpawnObjectsOverTime(bulletsListToSpawn, bulletEnemySpawnLocator, true));
 
         }
     }
@@ -145,10 +140,12 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
         if(isPlayer)
         {
             Destroy(playerBulletsList[playerBulletsList.Count -1]);
+            playerBulletsList.RemoveAt(playerBulletsList.Count);
         }
         else 
         {
-            Destroy(playerBulletsList[enemyBulletList.Count - 1]);
+            Destroy(enemyBulletList[enemyBulletList.Count - 1]);
+            enemyBulletList.RemoveAt(enemyBulletList.Count);
         }
     }
     public Animator playerGun, aiGun;
