@@ -88,15 +88,15 @@ public class Card : MonoBehaviour
     
 	private void TestVisibility()
 	{
-		float angle = Vector3.Angle(Camera.main.transform.forward, transform.forward);
-		if (angle < 90)
-		{
-			FrontBecameVisible();
-		}
-		else
-		{
-			FrontBecameHidden();
-		}
+		// float angle = Vector3.Angle(Camera.main.transform.forward, transform.forward);
+		// if (angle < 90)
+		// {
+		// 	FrontBecameVisible();
+		// }
+		// else
+		// {
+		// 	FrontBecameHidden();
+		// }
 	}
 
 	private void FrontBecameVisible()
@@ -106,7 +106,7 @@ public class Card : MonoBehaviour
 
 
 
-		GetComponent<Renderer>().material.mainTexture = mTexture;
+		//GetComponent<Renderer>().material.mainTexture = mTexture;
 
 	}
 	

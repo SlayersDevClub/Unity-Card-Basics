@@ -87,6 +87,8 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
 
         for (int i = 0; i < numberOfObjects; i++)
         {
+            //Audio
+            AudioManager.Instance.PlayBulletDropSound();
             // Generate a random position within the rectangular area relative to the target
             Vector3 randomOffset = new Vector3(
                 Random.Range(-areaSize.x / 2, areaSize.x / 2),
@@ -153,32 +155,38 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
     public void AIKillPlayer()
     {
         if(aiGun)aiGun.SetTrigger("Shoot");
+        AudioManager.Instance.PlayEndRoundSound();
     }
 
     public void PlayerKillAI()
     {
         if(playerGun)playerGun.SetTrigger("Shoot");
+        AudioManager.Instance.PlayEndRoundSound();
     }
-
     public void ShowDamage(int damageAmount, Image healthBar)
     {
         // Instantiate the damage text
         TextMeshProUGUI damageText = Instantiate(damageTextPrefab, healthBar.rectTransform.position, Quaternion.identity, healthBar.rectTransform.parent);
 
         // Set the damage amount
-        damageText.text = damageAmount.ToString();
+        damageText.SetText(damageAmount.ToString());
 
         // Animate the text falling off the health bar
         Vector3 targetPosition = healthBar.rectTransform.position + new Vector3(30, -100f, 0); // Adjust the Y offset as needed
-        damageText.transform.DOMove(targetPosition, 2f).SetEase(Ease.OutQuad);
+        Tweener moveTween = damageText.transform.DOMove(targetPosition, 2f).SetEase(Ease.OutQuad).SetAutoKill(false);
 
         // Animate the alpha (fade out)
-        damageText.DOFade(0, 1f).SetEase(Ease.InQuad).OnComplete(() =>
+        Tweener fadeTween = damageText.DOFade(0, 1f).SetEase(Ease.InQuad).OnComplete(() =>
         {
+            // Kill tweens before destroying the object to avoid errors
+            moveTween.Kill();
+            //fadeTween.Kill();
+
             // Destroy the text after the animation
             Destroy(damageText.gameObject);
-        });
+        }).SetAutoKill(false);
     }
+
     private Tween currentTween;
     public void ShowText(string message, float displayDuration = 2f, float fadeDuration = 0.5f)
     {
@@ -203,7 +211,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
                 // Fade out
                 currentTween = outputText.DOFade(0f, fadeDuration);
             });
-        });
+        }).SetAutoKill(false);
     }
     public Canvas aiCanvas;
 
@@ -225,7 +233,7 @@ public class BlackjackUIManager : Singleton<BlackjackUIManager>
 
             currentTween = AIVoiceTxt.DOFade(0f, fadeDuration).SetDelay(displayDuration);
 
-        });
+        }).SetAutoKill(false);
 
         AIVoiceTxt.GetComponent<DOTweenAnimation>().DORewindAndPlayNext();
     }

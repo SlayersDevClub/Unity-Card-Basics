@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public class Dealer : MonoBehaviour 
@@ -49,6 +49,9 @@ public class Dealer : MonoBehaviour
 	[SerializeField]
 	private CardSlot _prior5CardSlot;
 
+
+	public readonly List<Card> CardsInPlay = new List<Card>();
+
 	private const float CardStackDelay = .001f;
 	
 	/// <summary>
@@ -56,9 +59,13 @@ public class Dealer : MonoBehaviour
 	/// </summary>
 	public int DealInProgress { get; set; }
 
-	private void Awake()
+	private void Start()
 	{
 		//_cardDeck.InstanatiateDeck("tarotbasic");
+		Invoke("DelayStart", 1);
+	}
+	void DelayStart()
+	{
 		_cardDeck.InstantiateDeck();
 		StartCoroutine(StackCardRangeOnSlot(0, _cardDeck.CardList.Count, _stackCardSlot));
 	}
@@ -85,6 +92,8 @@ public class Dealer : MonoBehaviour
 
 	public void DiscardCard()
 	{
+		//Audio
+		AudioManager.Instance.PlayCardDiscardSound();
 		MoveCardSlotToCardSlot(_prior0CardSlot, _discardStackCardSlot);
 		MoveCardSlotToCardSlot(_prior1CardSlot, _discardStackCardSlot);
 		MoveCardSlotToCardSlot(_prior2CardSlot, _discardStackCardSlot);
@@ -163,10 +172,12 @@ public class Dealer : MonoBehaviour
 
 		DealInProgress--;
     }
-	public int currentCollectiveCardValue = 0, drawnValue = 0;
+	public int currentCollectiveCardValue = 0, drawnValue = 0, currentCollectiveArmorValue, currentCollectiveExtraDamageValue;
 
 	public IEnumerator DrawCoroutine(TaskCompletionSource<int> tcs)
 	{
+		//Audio
+		AudioManager.Instance.PlayCardDrawSound();
 		DealInProgress++;
 		
 		if (_discardHoverStackCardSlot.AddCard(_prior5CardSlot.TopCard()))
@@ -214,6 +225,9 @@ public class Dealer : MonoBehaviour
 		//DealerUIInstance.FaceValueText.text = collectiveFaceValue.ToString();
 		//BlackjackGameManager.Instance.CheckScore();
 		DealInProgress--;
+
+		CardsInPlay.Add(_currentCardSlot.TopCard());
+
 		tcs.SetResult(drawnValue);
 	}
 

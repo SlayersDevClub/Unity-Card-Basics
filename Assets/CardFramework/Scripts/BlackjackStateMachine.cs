@@ -64,7 +64,7 @@ public class BlackjackStateMachine : Singleton<BlackjackStateMachine>
     IEnumerator TransitionToState(GameState newState)
     {
         currentState = newState;
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(.1f);
         switch (currentState)
         {
             case GameState.Phase0_DrawDecks:
@@ -340,16 +340,40 @@ public class BlackjackStateMachine : Singleton<BlackjackStateMachine>
             BlackjackUIManager.Instance.ShowDamage(tmpDamage, BlackjackUIManager.Instance.playerHealthbar);
         }
 
+
+        BlackjackUIManager.Instance.FlashRed();
+        BlackjackUIManager.Instance.ShakeCamera();
+    }
+
+    void EnemyTakeDamageDelay()
+    {
+        int tmpArmor = BlackjackGameManager.Instance.enemyArmor;
+        if (tmpArmor > 0)
+        {
+            int dmgDifference = tmpArmor - tmpDamage;
+            if (tmpDamage > tmpArmor)
+            {
+
+            }
+        }
+        else
+        {
+            BlackjackUIManager.Instance.enemyHealthbar.fillAmount = (float)tmpHealth / 100;
+            BlackjackUIManager.Instance.enemyHealthbar.GetComponentInChildren<TMPro.TextMeshProUGUI>().SetText(tmpHealth.ToString());
+            BlackjackUIManager.Instance.ShowDamage(tmpDamage, BlackjackUIManager.Instance.enemyHealthbar);
+        }
+
         BlackjackUIManager.Instance.FlashRed();
         BlackjackUIManager.Instance.ShakeCamera();
     }
 
     public void AITakeDamage(int health, int damage)
     {
-        BlackjackUIManager.Instance.enemyHealthbar.fillAmount = (float)health / 100;
-        BlackjackUIManager.Instance.ShowDamage(damage, BlackjackUIManager.Instance.enemyHealthbar);
-        DG.Tweening.DOTween.Play("hit");
+        tmpDamage = damage;
+        tmpHealth = health;
         BlackjackUIManager.Instance.spawner.SpawnProjectile(player, enemy, damage);
+        Invoke("EnemyTakeDamageDelay", 1f);
+
     }
 
     void HandlePhase4()
